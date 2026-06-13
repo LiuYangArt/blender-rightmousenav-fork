@@ -1,6 +1,6 @@
-# RightMouseNavigation
+# UE Navigation
 ### Addon now a Blender Extension, one-click install from within Blender!
-![RightMouseNavigation Logo](/RightMouseNavigationLogoV2.png)
+![UE Navigation Logo](/RightMouseNavigationLogoV2.png)
 Enables Unreal Engine-style Right Mouse Viewport Navigation and Blueprint-like Node workflow.
 
 Maps Blender's Walk/Fly Navigation to the Right Mouse Button in addition to the standard context menus in the 3D Viewport.
@@ -15,13 +15,13 @@ It also (optionally) can remap the Middle Mouse Button 3D View controls to Right
 ### Blender 4.2
 - Open **Blender**
 - click **Edit > Preferences > Extensions**
-- scroll or search for **Right Mouse Navigation**
+- scroll or search for **UE Navigation**
 - click **Install**
 ### Blender 4.1 and earlier
-Download __RightMouseNavigation.zip__ from the __Releases__ section on the right, then install by:
+Download __UE_Navigation.zip__ from the __Releases__ section on the right, then install by:
 - opening __Blender__
 - selecting __Edit__ > __Preferences__ > __Addons__ > __Install__ 
-- select __RightMouseNavigation.zip__
+- select __UE_Navigation.zip__
 - click __Install Addon__
 
 ## How to Use
@@ -43,28 +43,11 @@ To broaden the functionality of the addon, Right Click Select support has been a
 - the W key opens context menus, as before
 
 ### Preferences
-You can adjust the threshold for when you navigate/open menus by adjusting the time the mouse button is held in __Edit__ > __Preferences__ > __Addons__ > __View 3D: Right Mouse Navigation__ by clicking the dropdown arrow and tweaking the values there.
+You can adjust the threshold for when you navigate/open menus by adjusting the time the mouse button is held in __Edit__ > __Preferences__ > __Addons__ > __View 3D: UE Navigation__ by clicking the dropdown arrow and tweaking the values there.
 
 Additionally, in the settings, you can change the cursor resetting behavior. By default, the cursor will snap back to the location where you initally clicked Right Mouse Button, after navigation exits. If you would rather the cursor stay in the center (where the navigation crosshair is) after navigation, you can disable the setting. 
 
 You can enable/disable Node Editor mode in the Preferences.
-
-#### Switching default Middle Mouse 3D View Controls to Right Mouse
-To match other 3D software, the Middle Mouse 3D View camera controls can also be switched to use the Right Mouse instead:
-- Shift + Drag RMB to Pan 3D View
-- Ctrl + Drag RMB to Zoom 3D View
-- Ctrl + Shift + Drag RMB to Dolly Zoom 3D View
-- Alt + Drag RMB to Rotate 3D View
-
-Other controls that were switched to Middle Mouse:
-- Shift + Click MMB to Set 3D Cursor
-- Shift + Drag MMB to Transform Translate
-- Ctrl + Drag MMB to Lasso Selection
-- Shift + Ctrl + Drag MMB to Lasso Deselection
-
-There is also a setting to switch the activation of Right Mouse Navigation mode and the 3D View Rotate keymapping:
-- Drag + RMB will now Rotate 3D View
-- Alt + RMB then WASD for Navigation Mode
 
 ## Acknowledgements and Thanks
 

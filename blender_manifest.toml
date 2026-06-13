@@ -1,8 +1,8 @@
 schema_version = "1.0.0"
 
-id = "right_mouse_navigation"
+id = "ue_navigation"
 version = "2.8.0"
-name = "Right Mouse Navigation"
+name = "UE Navigation"
 tagline = "Game Engine Movement and Menus"
 maintainer = "Spectral Vectors and Contributors"
 type = "add-on"

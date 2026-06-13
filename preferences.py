@@ -6,10 +6,6 @@ from bpy.props import (
 )
 from bpy.types import AddonPreferences
 
-menumodes = []
-panelmodes = []
-
-
 def draw_cam_lock(self, context):
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
@@ -19,14 +15,7 @@ def draw_cam_lock(self, context):
 
     row = layout.row(align=True)
     row.alert = cam_nav
-    col = row.column()
-    col.scale_x = 1.3
-    icon = "VIEW_UNLOCKED" if cam_nav else "VIEW_LOCKED"
-    row.operator(text="", operator="rmn.toggle_cam_navigation", icon=icon)
-
-    row = row.row(align=True)
-    row.label(text="", icon="CAMERA_DATA")
-    row.label(text="", icon="MOUSE_MOVE")
+    row.operator(text="", operator="rmn.toggle_cam_navigation", icon="CAMERA_DATA")
 
 
 def cam_lock_update(self, context):
@@ -53,47 +42,19 @@ def update_node_keymap(self, context):
 
     try:
         node_keymap(active_keyconfig)
-    except:
+    except KeyError:
         node_keymap(blender_keyconfig)
     finally:
         node_keymap(user_keyconfig)
 
-    preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
-    # addon_kc = wm.keyconfigs.addon
+    addon_prefs = context.preferences.addons[__package__].preferences
+    addon_keymap = wm.keyconfigs.addon.keymaps.get("Node Editor")
+    if not addon_keymap:
+        return
 
-    for key in user_keyconfig.keymaps["Node Editor"].keymap_items:
+    for key in addon_keymap.keymap_items:
         if key.idname == "rmn.right_mouse_navigation" and key.type == "RIGHTMOUSE":
             key.active = addon_prefs.enable_for_node_editors
-
-
-def update_rebind_3dview_keymap(self, context):    
-    wm = context.window_manager
-    active_keyconfig = wm.keyconfigs.active
-    blender_keyconfig = wm.keyconfigs["Blender"]
-    user_keyconfig = wm.keyconfigs["Blender user"]
-
-    try:
-        self.rebind_3dview_keymap(active_keyconfig, self.rmb_pan_rotate)
-    except KeyError:
-        self.rebind_3dview_keymap(blender_keyconfig, self.rmb_pan_rotate)
-    except KeyError:
-        self.rebind_3dview_keymap(user_keyconfig, self.rmb_pan_rotate)
-
-
-def update_rebind_switch_nav_rotate(self, context):    
-    wm = context.window_manager
-    active_keyconfig = wm.keyconfigs.active
-    addon_keyconfig = wm.keyconfigs.addon
-    blender_keyconfig = wm.keyconfigs["Blender"]
-    user_keyconfig = wm.keyconfigs["Blender user"]
-
-    try:
-        self.rebind_switch_nav_rotate(active_keyconfig, addon_keyconfig, self.rmb_rotate_switch)
-    except KeyError:
-        self.rebind_switch_nav_rotate(blender_keyconfig, addon_keyconfig, self.rmb_rotate_switch)
-    except KeyError:
-        self.rebind_switch_nav_rotate(user_keyconfig, addon_keyconfig, self.rmb_rotate_switch)
 
 
 class RightMouseNavigationPreferences(AddonPreferences):
@@ -159,152 +120,6 @@ class RightMouseNavigationPreferences(AddonPreferences):
         update=cam_lock_update,
     )
 
-    rmb_pan_rotate: BoolProperty(
-        name="Switch MMB and RMB Drag Camera Navigation",
-        description="Switches Camera Navigation controls to Right Mouse Button. Context Menus will be set to Click when these options are toggled.",
-        default=False,
-        update=update_rebind_3dview_keymap,
-    )
-
-    rmb_rotate_switch: BoolProperty(
-        name="Use Alt to enter Right Mouse Navigation with WASD",
-        description="Switches RMB Navigation and drag Rotation controls with Alt modifier.",
-        default=False,
-        update=update_rebind_switch_nav_rotate,
-    )
-
-    def rebind_3dview_keymap(self, keyconfig, isActive):
-        if isActive:
-            for key in keyconfig.keymaps["3D View"].keymap_items:
-                if key.idname == "view3d.cursor3d" and key.type == "RIGHTMOUSE":
-                    key.type = "MIDDLEMOUSE"
-                    key.value = "CLICK"
-                    key.shift = True
-                if key.idname == "view3d.rotate" and key.type == "MIDDLEMOUSE":
-                    key.type = "RIGHTMOUSE"
-                    key.value = "CLICK_DRAG"
-                    key.alt = True
-                if key.idname == "view3d.move" and key.type == "MIDDLEMOUSE":
-                    key.type = "RIGHTMOUSE"
-                    key.value = "CLICK_DRAG"
-                    key.shift = True
-                if key.idname == "view3d.zoom" and key.type == "MIDDLEMOUSE":
-                    key.type = "RIGHTMOUSE"
-                    key.value = "CLICK_DRAG"
-                    key.ctrl = True
-                if key.idname == "view3d.dolly" and key.type == "MIDDLEMOUSE":
-                    key.type = "RIGHTMOUSE"
-                    key.value = "CLICK_DRAG"
-                    key.shift = True
-                    key.ctrl = True
-                if (
-                    key.idname == "view3d.select_lasso"
-                    and key.type == "RIGHTMOUSE"
-                    and key.ctrl == True
-                ):
-                    key.type = "MIDDLEMOUSE"
-                    key.value = "CLICK_DRAG"
-                    key.ctrl = True
-                if (
-                    key.idname == "view3d.select_lasso"
-                    and key.type == "RIGHTMOUSE"
-                    and key.ctrl == True
-                    and key.shift == True
-                ):
-                    key.type = "MIDDLEMOUSE"
-                    key.value = "CLICK_DRAG"
-                    key.shift = True
-                    key.ctrl = True
-                if key.idname == "transform.translate" and key.type == "RIGHTMOUSE":
-                    key.type = "MIDDLEMOUSE"
-        else:
-            for key in keyconfig.keymaps["3D View"].keymap_items:
-                if key.idname == "view3d.cursor3d" and key.type == "MIDDLEMOUSE":
-                    key.type = "RIGHTMOUSE"
-                    key.value = "CLICK"
-                    key.shift = True
-                if key.idname == "view3d.rotate" and key.type == "RIGHTMOUSE":
-                    key.type = "MIDDLEMOUSE"
-                    key.value = "PRESS"
-                    key.alt = False
-                if key.idname == "view3d.move" and key.type == "RIGHTMOUSE":
-                    key.type = "MIDDLEMOUSE"
-                    key.value = "PRESS"
-                    key.shift = True
-                if key.idname == "view3d.zoom" and key.type == "RIGHTMOUSE":
-                    key.type = "MIDDLEMOUSE"
-                    key.value = "PRESS"
-                    key.ctrl = True
-                if key.idname == "view3d.dolly" and key.type == "RIGHTMOUSE":
-                    key.type = "MIDDLEMOUSE"
-                    key.value = "PRESS"
-                    key.shift = True
-                    key.ctrl = True
-                if (
-                    key.idname == "view3d.select_lasso"
-                    and key.type == "MIDDLEMOUSE"
-                    and key.ctrl == True
-                ):
-                    key.type = "RIGHTMOUSE"
-                    key.value = "CLICK_DRAG"
-                    key.ctrl = True
-                if (
-                    key.idname == "view3d.select_lasso"
-                    and key.type == "MIDDLEMOUSE"
-                    and key.ctrl == True
-                    and key.shift == True
-                ):
-                    key.type = "RIGHTMOUSE"
-                    key.value = "CLICK_DRAG"
-                    key.shift = True
-                    key.ctrl = True
-                if key.idname == "transform.translate" and key.type == "MIDDLEMOUSE":
-                    key.type = "RIGHTMOUSE"
-
-    def rebind_switch_nav_rotate(self, keyconfig, addon_kc, isActive):        
-        if isActive:
-            for key in addon_kc.keymaps["3D View"].keymap_items:
-                if key.idname == "rmn.right_mouse_navigation":
-                    key.type = "RIGHTMOUSE"
-                    key.value = "PRESS"
-                    key.alt = True
-            for key in keyconfig.keymaps["3D View"].keymap_items:
-                if key.idname == "view3d.rotate" and key.type == "RIGHTMOUSE":
-                    key.type = "RIGHTMOUSE"
-                    key.value = "CLICK_DRAG"
-                    key.alt = False
-            for i in self.menumodes:
-                for key in keyconfig.keymaps[i].keymap_items:
-                    if key.idname == "wm.call_menu" and key.type == "RIGHTMOUSE":
-                        key.active = True
-                        key.value = "CLICK"
-            for i in self.panelmodes:
-                for key in keyconfig.keymaps[i].keymap_items:
-                    if key.idname == "wm.call_panel" and key.type == "RIGHTMOUSE":
-                        key.active = True
-                        key.value = "CLICK"
-        else:
-            for key in addon_kc.keymaps["3D View"].keymap_items:
-                if key.idname == "rmn.right_mouse_navigation":
-                    key.type = "RIGHTMOUSE"
-                    key.value = "PRESS"
-                    key.alt = False
-            for key in keyconfig.keymaps["3D View"].keymap_items:
-                if key.idname == "view3d.rotate" and key.type == "RIGHTMOUSE":
-                    key.type = "RIGHTMOUSE"
-                    key.value = "CLICK_DRAG"
-                    key.alt = True
-            for i in self.menumodes:
-                for key in keyconfig.keymaps[i].keymap_items:
-                    if key.idname == "wm.call_menu" and key.type == "RIGHTMOUSE":
-                        key.active = False
-                        key.value = "PRESS"
-            for i in self.panelmodes:
-                for key in keyconfig.keymaps[i].keymap_items:
-                    if key.idname == "wm.call_panel" and key.type == "RIGHTMOUSE":
-                        key.active = False
-                        key.value = "PRESS"
-
     def draw(self, context):
         layout = self.layout
 
@@ -339,145 +154,6 @@ class RightMouseNavigationPreferences(AddonPreferences):
         box = row.box()
         box.label(text="Node Editor", icon="NODETREE")
         box.prop(self, "enable_for_node_editors")
-
-        # RMB MMB Box
-        box = layout.box()
-
-        header, panel = box.panel(idname="panzoom", default_closed=True)
-        header.label(text="Pan, Zoom, Rotate", icon="VIEW3D")
-
-        if panel:
-            row = panel.row()
-            row.prop(self, "rmb_pan_rotate", text="Swap MMB & RMB Navigation Controls")
-            row.prop(self, "rmb_rotate_switch", text="Require Alt for Walk/Fly Navigation")
-
-            # Split the layout at 30%
-            split = panel.split(factor=0.3)
-            split.active = self.rmb_pan_rotate
-
-            # One side of split for titles
-            title = split.column()
-            title.alignment = "RIGHT"
-
-            row = title.row()
-            row.alignment = "LEFT"
-            row.label(text="Right Mouse", icon="MOUSE_RMB")
-
-            # RMB
-            title.label(text="Navigation Mode:")
-            title.label(text="Rotate 3D View:")
-            title.label(text="Pan 3D View:")
-            title.label(text="Zoom 3D View:")
-            title.label(text="Dolly Zoom 3D View:")
-
-            row = title.row()
-            row.alignment = "LEFT"
-            row.label(text="Middle Mouse", icon="MOUSE_MMB")
-
-            # MMB
-            title.label(text="Set 3D Cursor:")
-            title.label(text="Transform Translate:")
-            title.label(text="Lasso Selection:")
-            title.label(text="Lasso Deselection:")
-
-            # The other side of the split holds content
-            content = split.column()
-
-            row = content.row()
-            row.label(text="")
-
-            # RMB
-            row = content.row(align=True)
-            row.label(text="", icon="EVENT_W")
-            row.label(text="", icon="EVENT_A")
-            row.label(text="", icon="EVENT_S")
-            row.label(text="", icon="EVENT_D")
-            row.label(text="", icon="ADD")
-            if self.rmb_rotate_switch:
-                row.label(text="", icon="EVENT_ALT")
-                row.label(text="", icon="ADD")
-            row.label(text="", icon="MOUSE_RMB_DRAG")
-            label = row.row()
-            label.active = False
-            text = (
-                "(WASD + Right Mouse)"
-                if not self.rmb_rotate_switch
-                else "(WASD + Alt + Right Mouse)"
-            )
-            label.label(text=text)
-
-            row = content.row(align=True)
-            if not self.rmb_rotate_switch:
-                row.label(text="", icon="EVENT_ALT")
-                row.label(text="", icon="ADD")
-            row.label(text="", icon="MOUSE_RMB_DRAG")
-            label = row.row()
-            label.active = False
-            text = "(Alt + Right Mouse)" if not self.rmb_rotate_switch else "(Right Mouse)"
-            label.label(text=text)
-
-            row = content.row(align=True)
-            row.label(text="", icon="EVENT_SHIFT")
-            row.label(text="", icon="ADD")
-            row.label(text="", icon="MOUSE_RMB_DRAG")
-            label = row.row()
-            label.active = False
-            label.label(text="(Shift + Right Mouse)")
-
-            row = content.row(align=True)
-            row.label(text="", icon="EVENT_CTRL")
-            row.label(text="", icon="ADD")
-            row.label(text="", icon="MOUSE_RMB_DRAG")
-            label = row.row()
-            label.active = False
-            label.label(text="(Ctrl + Right Mouse)")
-
-            row = content.row(align=True)
-            row.label(text="", icon="EVENT_CTRL")
-            row.label(text="", icon="ADD")
-            row.label(text="", icon="EVENT_SHIFT")
-            row.label(text="", icon="ADD")
-            row.label(text="", icon="MOUSE_RMB_DRAG")
-            label = row.row()
-            label.active = False
-            label.label(text="(Ctrl + Shift + Right Mouse)")
-
-            row = content.row()
-            row.label(text="")
-            # MMB
-            row = content.row(align=True)
-            row.label(text="", icon="EVENT_SHIFT")
-            row.label(text="", icon="ADD")
-            row.label(text="", icon="MOUSE_MMB")
-            label = row.row()
-            label.active = False
-            label.label(text="(Shift + Middle Mouse)")
-
-            row = content.row(align=True)
-            row.label(text="", icon="EVENT_SHIFT")
-            row.label(text="", icon="ADD")
-            row.label(text="", icon="MOUSE_MMB_DRAG")
-            label = row.row()
-            label.active = False
-            label.label(text="(Shift + Middle Mouse)")
-
-            row = content.row(align=True)
-            row.label(text="", icon="EVENT_CTRL")
-            row.label(text="", icon="ADD")
-            row.label(text="", icon="MOUSE_MMB_DRAG")
-            label = row.row()
-            label.active = False
-            label.label(text="(Ctrl + Middle Mouse)")
-
-            row = content.row(align=True)
-            row.label(text="", icon="EVENT_SHIFT")
-            row.label(text="", icon="ADD")
-            row.label(text="", icon="EVENT_CTRL")
-            row.label(text="", icon="ADD")
-            row.label(text="", icon="MOUSE_MMB_DRAG")
-            label = row.row()
-            label.active = False
-            label.label(text="(Shift + Ctrl + Right Mouse)")
 
         # Keymap Customization
         import rna_keymap_ui
@@ -544,6 +220,17 @@ class RightMouseNavigationPreferences(AddonPreferences):
 
         if panel:
             col = panel.column(align=True)
+            addon_keyconfig = wm.keyconfigs.addon
+            trigger_km = addon_keyconfig.keymaps.get("3D View")
+            if trigger_km:
+                for trigger_kmi in trigger_km.keymap_items:
+                    if trigger_kmi.idname == "rmn.right_mouse_navigation":
+                        col.label(text="UE Navigation Trigger", icon="MOUSE_RMB")
+                        col.context_pointer_set("keymap", trigger_km)
+                        rna_keymap_ui.draw_kmi([], addon_keyconfig, trigger_km, trigger_kmi, col, 0)
+                        col.separator()
+                        break
+
             for km, kmi in get_kmi_l:
                 if not km.name == old_km_name:
                     col.label(text=str(km.name), icon="DOT")
