@@ -93,6 +93,12 @@ class RMN_OT_right_mouse_navigation(Operator):
                 # than the threshold value, then set flag to call a context menu.
                 if self._count < addon_prefs.time:
                     self._callMenu = True
+                self.confirm_walk_navigation_on_release(
+                    context,
+                    event,
+                    addon_prefs,
+                    space_type,
+                )
                 # Let Blender navigation see the release before cleanup.
                 self._finished = True
                 return {"PASS_THROUGH"}
@@ -101,6 +107,23 @@ class RMN_OT_right_mouse_navigation(Operator):
                 if self._count <= addon_prefs.time:
                     self._count += 0.1
             return {"PASS_THROUGH"}
+
+    def confirm_walk_navigation_on_release(
+        self,
+        context,
+        event,
+        addon_prefs,
+        space_type,
+    ):
+        if space_type != "VIEW_3D" or addon_prefs.navigation_mode != "WALK":
+            return
+
+        context.window.event_simulate(
+            type="LEFTMOUSE",
+            value="RELEASE",
+            x=event.mouse_x,
+            y=event.mouse_y,
+        )
 
     def set_walk_confirm_to_trigger(self, context):
         if self._trigger_type not in self._supported_trigger_types:
