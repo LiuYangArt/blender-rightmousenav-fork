@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "ue_navigation"
-version = "1.0.0"
+version = "1.0.1"
 name = "UE Navigation"
 tagline = "Game Engine Movement and Menus"
 maintainer = "Spectral Vectors and Contributors"
