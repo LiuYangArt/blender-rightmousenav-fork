@@ -2,6 +2,9 @@ import bpy
 from bpy.types import Operator
 
 
+DEFAULT_TRIGGER_TYPE = "BUTTON4MOUSE"
+
+
 class RMN_OT_right_mouse_navigation(Operator):
     """Timer that decides whether to display a menu after Right Click"""
 
@@ -14,7 +17,7 @@ class RMN_OT_right_mouse_navigation(Operator):
     _finished = False
     _callMenu = False
     _back_to_ortho = False
-    _trigger_type = "RIGHTMOUSE"
+    _trigger_type = DEFAULT_TRIGGER_TYPE
     _walk_confirm_state = None
     _supported_trigger_types = {
         "LEFTMOUSE",
@@ -83,7 +86,7 @@ class RMN_OT_right_mouse_navigation(Operator):
 
             self.cancel(context)
             self.restore_walk_confirm_keymap()
-            return {"CANCELLED"}
+            return {"CANCELLED", "PASS_THROUGH"}
 
         if space_type == "VIEW_3D" or space_type == "NODE_EDITOR" and enable_nodes:
             if event.type == self._trigger_type and event.value in {"RELEASE"}:
@@ -93,12 +96,6 @@ class RMN_OT_right_mouse_navigation(Operator):
                 # than the threshold value, then set flag to call a context menu.
                 if self._count < addon_prefs.time:
                     self._callMenu = True
-                self.confirm_walk_navigation_on_release(
-                    context,
-                    event,
-                    addon_prefs,
-                    space_type,
-                )
                 # Let Blender navigation see the release before cleanup.
                 self._finished = True
                 return {"PASS_THROUGH"}
@@ -107,23 +104,6 @@ class RMN_OT_right_mouse_navigation(Operator):
                 if self._count <= addon_prefs.time:
                     self._count += 0.1
             return {"PASS_THROUGH"}
-
-    def confirm_walk_navigation_on_release(
-        self,
-        context,
-        event,
-        addon_prefs,
-        space_type,
-    ):
-        if space_type != "VIEW_3D" or addon_prefs.navigation_mode != "WALK":
-            return
-
-        context.window.event_simulate(
-            type="LEFTMOUSE",
-            value="RELEASE",
-            x=event.mouse_x,
-            y=event.mouse_y,
-        )
 
     def set_walk_confirm_to_trigger(self, context):
         if self._trigger_type not in self._supported_trigger_types:
@@ -160,11 +140,11 @@ class RMN_OT_right_mouse_navigation(Operator):
                     )
                     key.type = self._trigger_type
                     key.value = "RELEASE"
-                    key.any = True
-                    key.shift = False
-                    key.ctrl = False
-                    key.alt = False
-                    key.oskey = False
+                    key.any = False
+                    key.shift = -1
+                    key.ctrl = -1
+                    key.alt = -1
+                    key.oskey = -1
                     return
 
     def restore_walk_confirm_keymap(self):

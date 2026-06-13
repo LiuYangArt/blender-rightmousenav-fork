@@ -1,6 +1,7 @@
 import bpy
 
 from .operators import (
+    DEFAULT_TRIGGER_TYPE,
     RMN_OT_right_mouse_navigation,
     RMN_OT_toggle_cam_navigation,
 )
@@ -32,10 +33,10 @@ def register():
     )
     kmi = km.keymap_items.new(
         "rmn.right_mouse_navigation",
-        "RIGHTMOUSE",
+        DEFAULT_TRIGGER_TYPE,
         "PRESS",
     )
-    kmi.active = False
+    kmi.active = True
 
     km2 = addon_kc.keymaps.new(
         name="Node Editor",
