@@ -13,7 +13,9 @@ except ModuleNotFoundError:  # pragma: no cover
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "blender_manifest.toml"
 VERSION_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
-MANIFEST_VERSION_RE = re.compile(r'(?m)^(version[^\S\r\n]*=[^\S\r\n]*")([^"]+)("[^\S\r\n]*)(\r?)$')
+MANIFEST_VERSION_RE = re.compile(
+    r'(?m)^(version[^\S\r\n]*=[^\S\r\n]*")([^"]+)("[^\S\r\n]*)(\r?)$'
+)
 
 
 def parse_version(version: str) -> tuple[int, int, int]:
@@ -47,7 +49,7 @@ def replace_once(path: Path, pattern: re.Pattern[str], replacement: str) -> None
 
 def write_manifest_version(version: str) -> None:
     parse_version(version)
-    replace_once(MANIFEST_PATH, MANIFEST_VERSION_RE, rf'\g<1>{version}\g<3>\g<4>')
+    replace_once(MANIFEST_PATH, MANIFEST_VERSION_RE, rf"\g<1>{version}\g<3>\g<4>")
 
 
 def bump_patch() -> str:
@@ -60,7 +62,9 @@ def bump_patch() -> str:
 def assert_version_matches_release_tag(release_tag: str | None = None) -> str:
     version = read_manifest_version()
     if release_tag is not None and release_tag != f"v{version}":
-        raise RuntimeError(f"Release tag mismatch: expected v{version}, got {release_tag}")
+        raise RuntimeError(
+            f"Release tag mismatch: expected v{version}, got {release_tag}"
+        )
     return version
 
 

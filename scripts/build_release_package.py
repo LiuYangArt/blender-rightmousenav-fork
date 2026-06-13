@@ -58,7 +58,9 @@ def build_package(output_dir: Path, release_tag: str | None = None) -> Path:
     if archive_path.exists():
         archive_path.unlink()
 
-    with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+    with zipfile.ZipFile(
+        archive_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+    ) as archive:
         for path in files:
             archive.write(path, path.relative_to(ROOT).as_posix())
 
@@ -67,8 +69,15 @@ def build_package(output_dir: Path, release_tag: str | None = None) -> Path:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build the UE Navigation release zip.")
-    parser.add_argument("--output", type=Path, default=ROOT / "dist", help="Output directory for the zip file.")
-    parser.add_argument("--release-tag", help="Expected GitHub release tag. Must be v{plugin version}.")
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=ROOT / "dist",
+        help="Output directory for the zip file.",
+    )
+    parser.add_argument(
+        "--release-tag", help="Expected GitHub release tag. Must be v{plugin version}."
+    )
     args = parser.parse_args()
 
     archive_path = build_package(args.output.resolve(), args.release_tag)

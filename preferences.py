@@ -6,6 +6,7 @@ from bpy.props import (
 )
 from bpy.types import AddonPreferences
 
+
 def draw_cam_lock(self, context):
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
@@ -227,7 +228,9 @@ class RightMouseNavigationPreferences(AddonPreferences):
                     if trigger_kmi.idname == "rmn.right_mouse_navigation":
                         col.label(text="UE Navigation Trigger", icon="MOUSE_RMB")
                         col.context_pointer_set("keymap", trigger_km)
-                        rna_keymap_ui.draw_kmi([], addon_keyconfig, trigger_km, trigger_kmi, col, 0)
+                        rna_keymap_ui.draw_kmi(
+                            [], addon_keyconfig, trigger_km, trigger_kmi, col, 0
+                        )
                         col.separator()
                         break
 
