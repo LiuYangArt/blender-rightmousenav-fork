@@ -15,7 +15,7 @@ class RMN_OT_right_mouse_navigation(Operator):
     _timer = None
     _count = 0
     _finished = False
-    _callMenu = False
+    _call_menu = False
     _back_to_ortho = False
     _trigger_type = DEFAULT_TRIGGER_TYPE
     _walk_confirm_state = None
@@ -61,25 +61,15 @@ class RMN_OT_right_mouse_navigation(Operator):
         # The _finished Boolean acts as a flag to exit the modal loop,
         # it is not made True until after the cancel function is called
         if self._finished:
-
-            def reset_cursor():
-                # Reset blender window cursor to previous position
-                area = context.area
-                x = area.x
-                y = area.y
-                x += int(area.width / 2)
-                y += int(area.height / 2)
-                bpy.context.window.cursor_warp(x, y)
-
-            if self._callMenu:
+            if self._call_menu:
                 # Always reset the cursor if menu is called, as that implies a canceled navigation
-                if addon_prefs.reset_cursor_on_exit and not space_type == "NODE_EDITOR":
-                    reset_cursor()
-                self.callMenu(context)
+                if addon_prefs.reset_cursor_on_exit and space_type != "NODE_EDITOR":
+                    self._reset_cursor(context)
+                self.call_menu(context)
             else:
                 # Exit of a full navigation. Only reset the cursor if the preference is enabled
                 if addon_prefs.reset_cursor_on_exit:
-                    reset_cursor()
+                    self._reset_cursor(context)
 
             if self._back_to_ortho:
                 bpy.ops.view3d.view_persportho()
@@ -88,14 +78,17 @@ class RMN_OT_right_mouse_navigation(Operator):
             self.restore_walk_confirm_keymap()
             return {"CANCELLED", "PASS_THROUGH"}
 
-        if space_type == "VIEW_3D" or space_type == "NODE_EDITOR" and enable_nodes:
-            if event.type == self._trigger_type and event.value in {"RELEASE"}:
+        is_supported_space = space_type == "VIEW_3D" or (
+            space_type == "NODE_EDITOR" and enable_nodes
+        )
+        if is_supported_space:
+            if event.type == self._trigger_type and event.value == "RELEASE":
                 # This brings back our mouse cursor to use with the menu
                 context.window.cursor_modal_restore()
                 # If the length of time you've been holding down the trigger is shorter
                 # than the threshold value, then set flag to call a context menu.
                 if self._count < addon_prefs.time:
-                    self._callMenu = True
+                    self._call_menu = True
                 # Let Blender navigation see the release before cleanup.
                 self._finished = True
                 return {"PASS_THROUGH"}
@@ -171,7 +164,18 @@ class RMN_OT_right_mouse_navigation(Operator):
 
         self._walk_confirm_state = None
 
-    def callMenu(self, context):
+    def _reset_cursor(self, context):
+        area = context.area
+        x = area.x + int(area.width / 2)
+        y = area.y + int(area.height / 2)
+        bpy.context.window.cursor_warp(x, y)
+
+    def _start_modal_timer(self, context, interval):
+        wm = context.window_manager
+        self._timer = wm.event_timer_add(interval, window=context.window)
+        wm.modal_handler_add(self)
+
+    def call_menu(self, context):
         wm = context.window_manager
         blender_keyconfig = wm.keyconfigs["Blender"]
 
@@ -221,31 +225,27 @@ class RMN_OT_right_mouse_navigation(Operator):
         # calling the appropriate navigation based on user preference
         if space_type == "VIEW_3D":
             view = context.space_data.region_3d.view_perspective
-            if not (view == "CAMERA" and disable_camera):
-                try:
-                    if navigation_mode == "ORBIT":
-                        bpy.ops.view3d.rotate("INVOKE_DEFAULT")
-                    else:
-                        self.set_walk_confirm_to_trigger(context)
-                        bpy.ops.view3d.walk("INVOKE_DEFAULT")
-                    # Adding the timer and starting the loop
-                    wm = context.window_manager
-                    self._timer = wm.event_timer_add(0.1, window=context.window)
-                    wm.modal_handler_add(self)
-                    return {"RUNNING_MODAL"}
-                except RuntimeError as error:
-                    self.restore_walk_confirm_keymap()
-                    self.report({"ERROR"}, str(error))
-                    return {"CANCELLED"}
-            else:
+            if view == "CAMERA" and disable_camera:
+                return {"CANCELLED"}
+
+            try:
+                if navigation_mode == "ORBIT":
+                    bpy.ops.view3d.rotate("INVOKE_DEFAULT")
+                else:
+                    self.set_walk_confirm_to_trigger(context)
+                    bpy.ops.view3d.walk("INVOKE_DEFAULT")
+                # Adding the timer and starting the loop
+                self._start_modal_timer(context, 0.1)
+                return {"RUNNING_MODAL"}
+            except RuntimeError as error:
+                self.restore_walk_confirm_keymap()
+                self.report({"ERROR"}, str(error))
                 return {"CANCELLED"}
 
         elif space_type == "NODE_EDITOR" and enable_nodes:
             bpy.ops.view2d.pan("INVOKE_DEFAULT")
-            wm = context.window_manager
             # Adding the timer and starting the loop
-            self._timer = wm.event_timer_add(0.01, window=context.window)
-            wm.modal_handler_add(self)
+            self._start_modal_timer(context, 0.01)
             return {"RUNNING_MODAL"}
 
         elif space_type == "IMAGE_EDITOR":

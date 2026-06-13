@@ -192,7 +192,7 @@ class RightMouseNavigationPreferences(AddonPreferences):
 
         try:
             walk_keymaps(active_keyconfig)
-        except:
+        except KeyError:
             walk_keymaps(blender_keyconfig)
         finally:
             walk_keymaps(user_keyconfig)
@@ -232,7 +232,7 @@ class RightMouseNavigationPreferences(AddonPreferences):
                         break
 
             for km, kmi in get_kmi_l:
-                if not km.name == old_km_name:
+                if km.name != old_km_name:
                     col.label(text=str(km.name), icon="DOT")
                 col.context_pointer_set("keymap", km)
                 rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
